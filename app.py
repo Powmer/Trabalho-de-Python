@@ -11,13 +11,14 @@ import os
 conexao = sqlite3.connect("usuarios.db")
 cursor = conexao.cursor()
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS alunos (
-    aluno TEXT PRIMARY KEY,
-    cadastro INTEGER PRIMARY KEY AUTOINCREMENT,
-    cursos INTEGER,
-    senha TEXT NOT NULL
-)
+    CREATE TABLE IF NOT EXISTS alunos (
+        cadastro INTEGER PRIMARY KEY AUTOINCREMENT,
+        aluno TEXT UNIQUE,
+        cursos INTEGER,
+        senha TEXT NOT NULL
+    )
 """)
+
 conexao.commit()
 
 def telaprincipalabrir():
