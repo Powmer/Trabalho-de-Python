@@ -45,6 +45,7 @@ def addtoarvere():
 def cadastrar():
     aluno = entry_aluno.get()
     senha = entry_senha.get()
+    email = entry_email.get()
 
     if not aluno or not senha:
         messagebox.showwarning("Aviso", "Preencha todos os campos.")
@@ -59,7 +60,7 @@ def cadastrar():
         messagebox.showerror("Erro", "Aluno já cadastrado.")
 
 def logar():
-    aluno = entry_aluno.get()
+    email = email_aluno.get()
     senha = entry_senha.get()
 
     cursor.execute("SELECT * FROM alunos WHERE aluno = ? AND senha = ?", (aluno, senha))
@@ -101,6 +102,11 @@ label_senha = tk.Label(frame_inputs, text="Senha:")
 label_senha.grid(row=1, column=0, padx=5, pady=5)
 entry_senha = tk.Entry(frame_inputs, show="*")
 entry_senha.grid(row=1, column=1, padx=5, pady=5)
+
+label_email = tk.Label(frame_inputs, text="email:")
+label_email.grid(row=1, column=0, padx=5, pady=5)
+entry_email = tk.Entry(frame_inputs, show="*")
+entry_email.grid(row=1, column=1, padx=5, pady=5)
 
 frame_botoes = tk.Frame(janela)
 frame_botoes.pack(pady=10)
