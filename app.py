@@ -50,7 +50,8 @@ def abrir_planilha():
     cursor_local.execute("SELECT email, cadastro, cursos FROM emails")
     rows = cursor_local.fetchall()
 
-    treeview = ttk.Treeview(root, columns=("email", "cadastro", "cursos"), show="headings")
+    treeview = ttk.Treeview(root, columns=("nome", "email", "cadastro", "cursos"), show="headings")
+     treeview.heading("nome", text="nome")
     treeview.heading("email", text="email")
     treeview.heading("cadastro", text="Matrícula")
     treeview.heading("cursos", text="Cursos")
@@ -95,7 +96,7 @@ def abrir_cadastro():
             messagebox.showwarning("Aviso", "Preencha todos os campos.", parent=cadastro_win)
             return
 
-        # Validação simples sem regex
+        # Validação simples sem regex(Obs: Integrar dps ta no commit DE REGEX)
         if any(char.isdigit() for char in nome):
             messagebox.showerror("Erro", "Nome inválido. Não use números.", parent=cadastro_win)
             return
