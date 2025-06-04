@@ -175,7 +175,6 @@ btn_cadastrar.grid(row=0, column=0, padx=10)
 
 btn_logar = tk.Button(frame_botoes, text="Login", command=logar)
 btn_logar.grid(row=0, column=1, padx=10)
-
 btn_arvore = tk.Button(frame_botoes, text="Árvore", command=abrir_planilha)
 btn_arvore.grid(row=0, column=2, padx=10)
 
@@ -185,7 +184,8 @@ btn_resetar.grid(row=0, column=3, padx=10)
 frame_lista = tk.Frame(janela)
 frame_lista.pack(pady=20, fill=tk.BOTH, expand=True)
 
-tree = ttk.Treeview(frame_lista, columns=("email", "cadastro", "cursos"), show="headings")
+tree = ttk.Treeview(frame_lista, columns=('nome', "email", "cadastro", "cursos"), show="headings")
+tree.heading("nome", text="nome")]
 tree.heading("email", text="email")
 tree.heading("cadastro", text="Matrícula")
 tree.heading("cursos", text="Cursos")
