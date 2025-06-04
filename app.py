@@ -2,8 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import sqlite3
 from tkinter import ttk
-import openpyxl
-from openpyxl import Workbook
 from datetime import datetime
 import os
 import re
