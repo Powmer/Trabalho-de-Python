@@ -47,7 +47,7 @@ def abrir_planilha():
 
     conn = sqlite3.connect(DB_NAME)
     cursor_local = conn.cursor()
-    cursor_local.execute("SELECT email, cadastro, cursos FROM emails")
+    cursor_local.execute("SELECT nome, email, cadastro, cursos FROM emails")
     rows = cursor_local.fetchall()
 
     treeview = ttk.Treeview(root, columns=("nome", "email", "cadastro", "cursos"), show="headings")
@@ -139,7 +139,7 @@ def atualizar_lista():
     for i in tree.get_children():
         tree.delete(i)
 
-    cursor.execute("SELECT email, cadastro, cursos FROM emails")
+    cursor.execute("SELECT nome, email, cadastro, cursos FROM emails")
     rows = cursor.fetchall()
 
     for row in rows:
