@@ -23,11 +23,11 @@ def criar_tabela():
 
 def resetar_banco():
     if messagebox.askyesno("Confirmar", "Tem certeza que deseja apagar todos os dados e resetar o banco?"):
-        try:
-            conexao.close()
-        except:
-            pass
         if os.path.exists(DB_NAME):
+            try:
+                conexao.close()
+            except:
+                pass
             os.remove(DB_NAME)
         criar_tabela()
         atualizar_lista()
@@ -51,7 +51,7 @@ def abrir_planilha():
     rows = cursor_local.fetchall()
 
     treeview = ttk.Treeview(root, columns=("nome", "email", "cadastro", "cursos"), show="headings")
-     treeview.heading("nome", text="nome")
+    treeview.heading("nome", text="nome")
     treeview.heading("email", text="email")
     treeview.heading("cadastro", text="Matrícula")
     treeview.heading("cursos", text="Cursos")
@@ -91,12 +91,11 @@ def abrir_cadastro():
         email = entry_email_local.get()
         senha = entry_senha_local.get()
         curso = curso_var.get()
-
+     # Validação simples sem regex(Obs: Integrar dps ta no commit DE REGEX)
         if not nome or not email or not senha or not curso:
             messagebox.showwarning("Aviso", "Preencha todos os campos.", parent=cadastro_win)
             return
 
-        # Validação simples sem regex(Obs: Integrar dps ta no commit DE REGEX)
         if any(char.isdigit() for char in nome):
             messagebox.showerror("Erro", "Nome inválido. Não use números.", parent=cadastro_win)
             return
@@ -144,9 +143,7 @@ def atualizar_lista():
 
     for row in rows:
         tree.insert("", "end", values=row)
-
-# --- Interface Principal ---
-
+#INTEFACE PRINCIPAL]s
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
 janela.geometry("500x400")
@@ -175,6 +172,7 @@ btn_cadastrar.grid(row=0, column=0, padx=10)
 
 btn_logar = tk.Button(frame_botoes, text="Login", command=logar)
 btn_logar.grid(row=0, column=1, padx=10)
+
 btn_arvore = tk.Button(frame_botoes, text="Árvore", command=abrir_planilha)
 btn_arvore.grid(row=0, column=2, padx=10)
 
@@ -185,7 +183,7 @@ frame_lista = tk.Frame(janela)
 frame_lista.pack(pady=20, fill=tk.BOTH, expand=True)
 
 tree = ttk.Treeview(frame_lista, columns=('nome', "email", "cadastro", "cursos"), show="headings")
-tree.heading("nome", text="nome")]
+tree.heading("nome", text="nome")
 tree.heading("email", text="email")
 tree.heading("cadastro", text="Matrícula")
 tree.heading("cursos", text="Cursos")
