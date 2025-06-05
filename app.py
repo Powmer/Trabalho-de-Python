@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import messagebox, ttk, PhotoImage
+from tkinter import messagebox, ttk, PhotoImage, filedialog
 import sqlite3
 import pandas as pd
 
@@ -194,14 +194,19 @@ def abrir_planilha():
     treeview.pack(fill=tk.BOTH, expand=True)
 
     def exportar_excel():
-        dados = []
-        for item in treeview.get_children():
-            dados.append(treeview.item(item)["values"])
+        caminho_arquivo = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Arquivos Excel", "*.xlsx"), ("Todos os arquivos", "*.*")],
+            title="Salvar planilha como"
+        )
+        if caminho_arquivo:
+            dados = []
+            for item in treeview.get_children():
+                dados.append(treeview.item(item)["values"])
 
-        df = pd.DataFrame(dados, columns=["Nome", "Email", "Cadastro", "Cursos", "Data de Inscrição"])
-        caminho = "usuarios_exportados.xlsx"
-        df.to_excel(caminho, index=False)
-        messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho}", parent=root)
+            df = pd.DataFrame(dados, columns=["Nome", "Email", "Cadastro", "Cursos", "Data de Inscrição"])
+            df.to_excel(caminho_arquivo, index=False)
+            messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho_arquivo}", parent=root)
 
     btn_exportar = tk.Button(root, text="Exportar para Excel", command=exportar_excel)
     btn_exportar.pack(pady=10)
