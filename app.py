@@ -1,8 +1,8 @@
 import os
 import tkinter as tk
-from tkinter import Image, messagebox, PhotoImage
+from tkinter import messagebox
 import sqlite3
-from tkinter import ttk
+from tkinter import ttk, PhotoImage
 
 DB_NAME = "usuarios.db"
 
@@ -16,7 +16,8 @@ def criar_tabela():
             nome TEXT,
             email TEXT UNIQUE,
             cursos TEXT,
-            senha TEXT NOT NULL
+            senha TEXT NOT NULL,
+            data_inscricao DATE DEFAULT (date('now'))
         )
     """)
     conexao.commit()
@@ -47,14 +48,15 @@ def abrir_planilha():
 
     conn = sqlite3.connect(DB_NAME)
     cursor_local = conn.cursor()
-    cursor_local.execute("SELECT nome, email, cadastro, cursos FROM emails")
+    cursor_local.execute("SELECT nome, email, cadastro, cursos, data_inscricao FROM emails")
     rows = cursor_local.fetchall()
 
-    treeview = ttk.Treeview(root, columns=("nome", "email", "cadastro", "cursos"), show="headings")
+    treeview = ttk.Treeview(root, columns=("nome", "email", "cadastro", "cursos", "data_inscricao"), show="headings")
     treeview.heading("nome", text="nome")
     treeview.heading("email", text="email")
     treeview.heading("cadastro", text="Matrícula")
     treeview.heading("cursos", text="Cursos")
+    treeview.heading("data_inscricao", text="Data de Inscrição")
 
     for row in rows:
         treeview.insert("", "end", values=row)
@@ -85,13 +87,13 @@ def abrir_cadastro():
     curso_var = tk.StringVar()
     curso_combo = ttk.Combobox(cadastro_win, textvariable=curso_var, values=curso_list)
     curso_combo.grid(row=3, column=1)
-
+# Validação simples sem regex(Obs: Integrar dps ta no commit DE REGEX)
     def confirmar_cadastro():
         nome = entry_nome_local.get()
         email = entry_email_local.get()
         senha = entry_senha_local.get()
         curso = curso_var.get()
-     # Validação simples sem regex(Obs: Integrar dps ta no commit DE REGEX)
+
         if not nome or not email or not senha or not curso:
             messagebox.showwarning("Aviso", "Preencha todos os campos.", parent=cadastro_win)
             return
@@ -134,23 +136,14 @@ def logar():
     else:
         messagebox.showerror("Erro", "Email ou senha incorretos.")
 
-def atualizar_lista():
-    for i in tree.get_children():
-        tree.delete(i)
-
-    cursor.execute("SELECT nome, email, cadastro, cursos FROM emails")
-    rows = cursor.fetchall()
-
-    for row in rows:
-        tree.insert("", "end", values=row)
-#INTEFACE PRINCIPAL]s
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
-janela.geometry("500x400")
+janela.geometry("600x400")
 
 img = PhotoImage(file="D:\Documentos\Trabalhos Faculdade\RadPy\Trabalho-de-Python\Baking-Bread-Logo.png")
 label_titulo = tk.Label(janela, image=img)
 label_titulo.pack(pady=10)
+
 
 frame_inputs = tk.Frame(janela)
 frame_inputs.pack()
@@ -183,14 +176,14 @@ btn_resetar.grid(row=0, column=3, padx=10)
 frame_lista = tk.Frame(janela)
 frame_lista.pack(pady=20, fill=tk.BOTH, expand=True)
 
-tree = ttk.Treeview(frame_lista, columns=('nome', "email", "cadastro", "cursos"), show="headings")
+tree = ttk.Treeview(frame_lista, columns=('nome', "email", "cadastro", "cursos", "data_inscricao"), show="headings")
 tree.heading("nome", text="nome")
 tree.heading("email", text="email")
 tree.heading("cadastro", text="Matrícula")
 tree.heading("cursos", text="Cursos")
+tree.heading("data_inscricao", text="Data de Inscrição")
 tree.pack(fill=tk.BOTH, expand=True)
 
 criar_tabela()
-atualizar_lista()
 
 janela.mainloop()
