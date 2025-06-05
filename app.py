@@ -152,6 +152,7 @@ def logar():
 
     if resultado:
         messagebox.showinfo("Sucesso", f"Bem-vindo, {email}!")
+        mostrar_info_usuario(resultado)
         telaprincipalabrir()
     else:
         messagebox.showerror("Erro", "Email ou senha incorretos.")
@@ -167,12 +168,18 @@ def telaprincipalabrir():
     frame_cursos = tk.Frame(janelaprincipal)
     frame_cursos.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    for curso in cursos_disponiveis:
-        lbl_titulo = tk.Label(frame_cursos, text=curso.titulo, font=("Arial", 12, "bold"), anchor="w")
-        lbl_titulo.pack(fill=tk.X, pady=2)
+    def abrir_conteudo_curso(curso):
+        conteudo_win = tk.Toplevel(janelaprincipal)
+        conteudo_win.title(curso.titulo)
         conteudo = curso.obter_conteudo()
-        lbl_conteudo = tk.Label(frame_cursos, text=conteudo, anchor="w", wraplength=450, justify="left")
-        lbl_conteudo.pack(fill=tk.X, padx=10, pady=1)
+
+        tk.Label(conteudo_win, text=curso.titulo, font=("Arial", 14, "bold")).pack(pady=10)
+        tk.Label(conteudo_win, text=conteudo, wraplength=450, justify="left").pack(padx=10, pady=10)
+
+    for curso in cursos_disponiveis:
+        btn_curso = tk.Button(frame_cursos, text=curso.titulo, font=("Arial", 12), width=30,
+                              command=lambda c=curso: abrir_conteudo_curso(c))
+        btn_curso.pack(pady=5)
 
 
 def abrir_planilha():
@@ -194,19 +201,16 @@ def abrir_planilha():
     treeview.pack(fill=tk.BOTH, expand=True)
 
     def exportar_excel():
-        caminho_arquivo = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Arquivos Excel", "*.xlsx"), ("Todos os arquivos", "*.*")],
-            title="Salvar planilha como"
-        )
-        if caminho_arquivo:
-            dados = []
-            for item in treeview.get_children():
-                dados.append(treeview.item(item)["values"])
+       
+        dados = []
+        for item in treeview.get_children():
+            dados.append(treeview.item(item)["values"])
 
-            df = pd.DataFrame(dados, columns=["Nome", "Email", "Cadastro", "Cursos", "Data de Inscrição"])
-            df.to_excel(caminho_arquivo, index=False)
-            messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho_arquivo}", parent=root)
+        df = pd.DataFrame(dados, columns=["Nome", "Email", "Cadastro", "Cursos", "Data de Inscrição"])
+        caminho = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        if caminho:
+            df.to_excel(caminho, index=False)
+            messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho}", parent=root)
 
     btn_exportar = tk.Button(root, text="Exportar para Excel", command=exportar_excel)
     btn_exportar.pack(pady=10)
