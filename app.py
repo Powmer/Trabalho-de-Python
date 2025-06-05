@@ -136,6 +136,16 @@ def logar():
     else:
         messagebox.showerror("Erro", "Email ou senha incorretos.")
 
+def atualizar_lista():
+    for i in tree.get_children():
+        tree.delete(i)
+
+    cursor.execute("SELECT nome, email, cadastro, cursos FROM emails")
+    rows = cursor.fetchall()
+
+    for row in rows:
+        tree.insert("", "end", values=row)
+#INTEFACE PRINCIPAL]s
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
 janela.geometry("600x400")
