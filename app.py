@@ -155,7 +155,6 @@ def logar():
     if resultado:
         usuario_logado = resultado
         messagebox.showinfo("Sucesso", f"Bem-vindo, {email}!")
-        mostrar_info_usuario(resultado)
         telaprincipalabrir()
     else:
         messagebox.showerror("Erro", "Email ou senha incorretos.")
@@ -201,7 +200,7 @@ def infowin():
     global janela_info
     janela_info = tk.Toplevel(janela)
     janela_info.title("Informações do Usuário")
-    janela_info.geometry("500x500")
+    janela_info.geometry("400x300")
 
     tk.Label(janela_info, text="Informações do Usuário", font=("Arial", 14, "bold")).pack(pady=10)
 
@@ -211,15 +210,20 @@ def infowin():
 
     cadastro, nome, email, cursos, senha, data_inscricao = usuario_logado
 
-    info_text = f"""
-    Nome: {nome}
-    Email: {email}
-    Cursos Inscritos: {cursos}
-    Data de Inscrição: {data_inscricao}
-    """
+    frame_info = tk.Frame(janela_info)
+    frame_info.pack(padx=20, pady=10, fill=tk.BOTH)
 
-    lbl_info = tk.Label(janela_info, text=info_text.strip(), justify="left", font=("Arial", 12), anchor="w")
-    lbl_info.pack(padx=20, pady=10, fill=tk.BOTH)
+    dados = {
+    "Nome:": nome,
+    "Email:": email,
+    "Cursos:": cursos,
+    "Data de Inscrição:": data_inscricao
+}
+
+    for i, (label, valor) in enumerate(dados.items()):
+        tk.Label(frame_info, text=label, font=("Arial", 12, "bold"), anchor="w", width=18).grid(row=i, column=0, sticky="w", pady=2)
+        tk.Label(frame_info, text=valor, font=("Arial", 12), anchor="w").grid(row=i, column=1, sticky="w", pady=2)
+
 
 def abrir_planilha():
     root = tk.Toplevel(janela)
@@ -260,7 +264,7 @@ def abrir_planilha():
 # INTERFACE PRINCIPAL
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
-janela.geometry("600x400")
+janela.geometry("600x450")
 img = PhotoImage(file="Baking-Bread-Logo.png")
 label_titulo = tk.Label(janela, image=img)
 label_titulo.pack(pady=10)
