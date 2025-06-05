@@ -203,7 +203,6 @@ def abrir_planilha():
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
 janela.geometry("600x400")
-]
 img = PhotoImage(file="Baking-Bread-Logo.png")
 label_titulo = tk.Label(janela, image=img)
 label_titulo.pack(pady=10)
