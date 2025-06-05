@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import Image, messagebox, PhotoImage
 import sqlite3
 from tkinter import ttk
 
@@ -148,7 +148,8 @@ janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
 janela.geometry("500x400")
 
-label_titulo = tk.Label(janela, text="Login", font=("Arial", 14))
+img = PhotoImage(file="D:\Documentos\Trabalhos Faculdade\RadPy\Trabalho-de-Python\Baking-Bread-Logo.png")
+label_titulo = tk.Label(janela, image=img)
 label_titulo.pack(pady=10)
 
 frame_inputs = tk.Frame(janela)
