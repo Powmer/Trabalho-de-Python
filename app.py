@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox, ttk, PhotoImage
 import sqlite3
+import pandas as pd
 
 DB_NAME = "usuarios.db"
 PASTA_CURSOS = "cursostxt"
@@ -27,6 +28,7 @@ def criar_pasta_cursos():
             with open(caminho, "w", encoding="utf-8") as f:
                 f.write(conteudo)
 
+
 criar_pasta_cursos()
 
 
@@ -42,6 +44,7 @@ class Curso:
                 return f.read()
         except FileNotFoundError:
             return "Conteúdo indisponível."
+
 
 cursos_disponiveis = [
     Curso("Panificação", "panificacao.txt"),
@@ -70,6 +73,7 @@ def criar_tabela():
     """)
     conexao.commit()
 
+
 def resetar_banco():
     if messagebox.askyesno("Confirmar", "Tem certeza que deseja apagar todos os dados e resetar o banco?"):
         if os.path.exists(DB_NAME):
@@ -79,18 +83,8 @@ def resetar_banco():
                 pass
             os.remove(DB_NAME)
         criar_tabela()
-        atualizar_lista()
         messagebox.showinfo("Sucesso", "Banco de dados resetado com sucesso!")
 
-def atualizar_lista():
-    for i in tree.get_children():
-        tree.delete(i)
-
-    cursor.execute("SELECT nome, email, cadastro, cursos, data_inscricao FROM emails")
-    rows = cursor.fetchall()
-
-    for row in rows:
-        tree.insert("", "end", values=row)
 
 def abrir_cadastro():
     cadastro_win = tk.Toplevel(janela)
@@ -141,7 +135,6 @@ def abrir_cadastro():
                            (nome, email, senha, cursos))
             conexao.commit()
             messagebox.showinfo("Sucesso", "Cadastro realizado com sucesso.", parent=cadastro_win)
-            atualizar_lista()
             cadastro_win.destroy()
         except sqlite3.IntegrityError:
             messagebox.showerror("Erro", "Email já cadastrado.", parent=cadastro_win)
@@ -163,6 +156,7 @@ def logar():
     else:
         messagebox.showerror("Erro", "Email ou senha incorretos.")
 
+
 def telaprincipalabrir():
     janelaprincipal = tk.Toplevel(janela)
     janelaprincipal.title("Todos os Cursos")
@@ -179,6 +173,7 @@ def telaprincipalabrir():
         conteudo = curso.obter_conteudo()
         lbl_conteudo = tk.Label(frame_cursos, text=conteudo, anchor="w", wraplength=450, justify="left")
         lbl_conteudo.pack(fill=tk.X, padx=10, pady=1)
+
 
 def abrir_planilha():
     root = tk.Toplevel(janela)
@@ -197,7 +192,22 @@ def abrir_planilha():
         treeview.insert("", "end", values=row)
 
     treeview.pack(fill=tk.BOTH, expand=True)
+
+    def exportar_excel():
+        dados = []
+        for item in treeview.get_children():
+            dados.append(treeview.item(item)["values"])
+
+        df = pd.DataFrame(dados, columns=["Nome", "Email", "Cadastro", "Cursos", "Data de Inscrição"])
+        caminho = "usuarios_exportados.xlsx"
+        df.to_excel(caminho, index=False)
+        messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho}", parent=root)
+
+    btn_exportar = tk.Button(root, text="Exportar para Excel", command=exportar_excel)
+    btn_exportar.pack(pady=10)
+
     conn.close()
+
 
 # INTERFACE PRINCIPAL
 janela = tk.Tk()
@@ -236,14 +246,5 @@ btn_arvore.grid(row=0, column=2, padx=10)
 btn_resetar = tk.Button(frame_botoes, text="Resetar Banco", command=resetar_banco)
 btn_resetar.grid(row=0, column=3, padx=10)
 
-frame_lista = tk.Frame(janela)
-frame_lista.pack(pady=20, fill=tk.BOTH, expand=True)
-
-tree = ttk.Treeview(frame_lista, columns=('nome', "email", "cadastro", "cursos", "data_inscricao"), show="headings")
-for col in ("nome", "email", "cadastro", "cursos", "data_inscricao"):
-    tree.heading(col, text=col.capitalize())
-tree.pack(fill=tk.BOTH, expand=True)
-
 criar_tabela()
-atualizar_lista()
 janela.mainloop()
