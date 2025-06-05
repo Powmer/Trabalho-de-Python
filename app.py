@@ -144,6 +144,8 @@ def abrir_cadastro():
 
 
 def logar():
+    global usuario_logado
+
     email = entry_email.get()
     senha = entry_senha.get()
 
@@ -151,6 +153,7 @@ def logar():
     resultado = cursor.fetchone()
 
     if resultado:
+        usuario_logado = resultado
         messagebox.showinfo("Sucesso", f"Bem-vindo, {email}!")
         telaprincipalabrir()
     else:
@@ -162,7 +165,20 @@ def telaprincipalabrir():
     janelaprincipal.title("Todos os Cursos")
     janelaprincipal.geometry("500x500")
 
+    def telaprincipalfechar():
+        try:
+            if janela_info.winfo_exists():
+                janela_info.destroy()
+        except:
+            pass
+        janelaprincipal.destroy()
+
+    janelaprincipal.protocol("WM_DELETE_WINDOW", telaprincipalfechar)
+
     tk.Label(janelaprincipal, text="Lista de Cursos", font=("Arial", 14, "bold")).pack(pady=10)
+
+    btn_info_usuario = tk.Button(janelaprincipal, text="Informações do Usuário", command=infowin)
+    btn_info_usuario.pack(side="bottom", pady=5)
 
     frame_cursos = tk.Frame(janelaprincipal)
     frame_cursos.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -174,6 +190,29 @@ def telaprincipalabrir():
         lbl_conteudo = tk.Label(frame_cursos, text=conteudo, anchor="w", wraplength=450, justify="left")
         lbl_conteudo.pack(fill=tk.X, padx=10, pady=1)
 
+def infowin():
+    global janela_info
+    janela_info = tk.Toplevel(janela)
+    janela_info.title("Informações do Usuário")
+    janela_info.geometry("500x500")
+
+    tk.Label(janela_info, text="Informações do Usuário", font=("Arial", 14, "bold")).pack(pady=10)
+
+    if not usuario_logado:
+        tk.Label(janela_info, text="Nenhum usuário logado.", font=("Arial", 12)).pack(pady=10)
+        return
+
+    cadastro, nome, email, cursos, senha, data_inscricao = usuario_logado
+
+    info_text = f"""
+    Nome: {nome}
+    Email: {email}
+    Cursos Inscritos: {cursos}
+    Data de Inscrição: {data_inscricao}
+    """
+
+    lbl_info = tk.Label(janela_info, text=info_text.strip(), justify="left", font=("Arial", 12), anchor="w")
+    lbl_info.pack(padx=20, pady=10, fill=tk.BOTH)
 
 def abrir_planilha():
     root = tk.Toplevel(janela)
