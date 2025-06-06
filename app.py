@@ -3,11 +3,13 @@ import tkinter as tk
 from tkinter import messagebox, ttk, PhotoImage, filedialog
 import sqlite3
 import pandas as pd
+
 ###ARQUIVOS DEFAULT###
 DB_NAME = "usuarios.db"
 PASTA_CURSOS = "cursostxt"
 #######################
 
+######FUNC PROVISORIA CASO A ARQUIVO TXT DO CURSO NAO EXISTA##########
 def criar_pasta_cursos():
     if not os.path.exists(PASTA_CURSOS):
         os.makedirs(PASTA_CURSOS)
@@ -28,7 +30,6 @@ def criar_pasta_cursos():
             with open(caminho, "w", encoding="utf-8") as f:
                 f.write(conteudo)
 
-
 criar_pasta_cursos()
 
 ####CLASS CURSO####
@@ -45,7 +46,6 @@ class Curso:
         except FileNotFoundError:
             return "Conteúdo indisponível."
 
-
 cursos_disponiveis = [
     Curso("Panificação", "panificacao.txt"),
     Curso("Confeitaria", "confeitaria.txt"),
@@ -56,7 +56,7 @@ cursos_disponiveis = [
     Curso("Sorvetes", "sorvetes.txt")
 ]
 
-#CREATE TABLE CASO NAO EXISTA ( CASO HAJA PROBLEMA DE FORMATAÇÂO DELETAR BANCO)
+#CRIAR TABLE NO SQL
 def criar_tabela():
     global conexao, cursor
     conexao = sqlite3.connect(DB_NAME)
@@ -73,7 +73,7 @@ def criar_tabela():
     """)
     conexao.commit()
 
-#O BOTAO 
+#USAR PRA ZERAR BANCO CASO NESCESSARIO
 def resetar_banco():
     if messagebox.askyesno("Confirmar", "Tem certeza que deseja apagar todos os dados e resetar o banco?"):
         if os.path.exists(DB_NAME):
@@ -85,7 +85,7 @@ def resetar_banco():
         criar_tabela()
         messagebox.showinfo("Sucesso", "Banco de dados resetado com sucesso!")
 
-#FUNC CADASTRO LOGIN E ""REGEX""
+#FUNC PRA ABRIR A PAGINA DE CADASTRO E ""REGEX""
 def abrir_cadastro():
     cadastro_win = tk.Toplevel(janela)
     cadastro_win.title("Cadastro de Aluno")
@@ -102,19 +102,14 @@ def abrir_cadastro():
     entry_senha_local = tk.Entry(cadastro_win, show="*")
     entry_senha_local.grid(row=2, column=1, padx=5, pady=5)
 
-    tk.Label(cadastro_win, text="Cursos (selecione):").grid(row=3, column=0, padx=5, pady=5)
-    cursos_var = tk.StringVar(value=[c.titulo for c in cursos_disponiveis])
-    lista_cursos = tk.Listbox(cadastro_win, listvariable=cursos_var, selectmode="multiple", height=6)
-    lista_cursos.grid(row=3, column=1, padx=5, pady=5)
-
+   #####FUNC CADASTRO E LOGIN
     def confirmar_cadastro():
         nome = entry_nome_local.get()
         email = entry_email_local.get()
         senha = entry_senha_local.get()
-        selecionados = [lista_cursos.get(i) for i in lista_cursos.curselection()]
-        cursos = ",".join(selecionados)
 
-        if not nome or not email or not senha or not cursos:
+
+        if not nome or not email or not senha:
             messagebox.showwarning("Aviso", "Preencha todos os campos.", parent=cadastro_win)
             return
 
@@ -131,8 +126,8 @@ def abrir_cadastro():
             return
 
         try:
-            cursor.execute("INSERT INTO emails (nome, email, senha, cursos) VALUES (?, ?, ?, ?)",
-                           (nome, email, senha, cursos))
+            cursor.execute("INSERT INTO emails (nome, email, senha) VALUES ( ?, ?, ?)",
+                           (nome, email, senha))
             conexao.commit()
             messagebox.showinfo("Sucesso", "Cadastro realizado com sucesso.", parent=cadastro_win)
             cadastro_win.destroy()
@@ -142,7 +137,7 @@ def abrir_cadastro():
     btn_confirmar = tk.Button(cadastro_win, text="Confirmar", command=confirmar_cadastro)
     btn_confirmar.grid(row=4, column=1, pady=10)
 
-
+######FUNÇÃO LOGAR#######
 def logar():
     global usuario_logado
 
@@ -162,9 +157,9 @@ def logar():
 
 def telaprincipalabrir():
     janelaprincipal = tk.Toplevel(janela)
-    janelaprincipal.title("Todos os Cursos")
+    janelaprincipal.title("Pagina Inicial")
     janelaprincipal.geometry("500x500")
-
+#######FECHA A JANELA COM INFO DO USUARIO CASO HAJA OUTRO LOGIN######
     def telaprincipalfechar():
         try:
             if janela_info.winfo_exists():
@@ -182,7 +177,7 @@ def telaprincipalabrir():
 
     frame_cursos = tk.Frame(janelaprincipal)
     frame_cursos.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
+######GERA JANELA COM O CONTEUDO DO CURSO ESCOLHIDO COM BASE EM UM TXT DE MESMO NOME######
     def abrir_conteudo_curso(curso):
         conteudo_win = tk.Toplevel(janelaprincipal)
         conteudo_win.title(curso.titulo)
@@ -191,12 +186,34 @@ def telaprincipalabrir():
         tk.Label(conteudo_win, text=curso.titulo, font=("Arial", 14, "bold")).pack(pady=10)
         tk.Label(conteudo_win, text=conteudo, wraplength=450, justify="left").pack(padx=10, pady=10)
 
+        def marcar_como_lido():
+            global usuario_logado
+            if not usuario_logado:
+                messagebox.showerror("Erro", "Nenhum usuário logado.")
+                return
+            cadastro, nome, email, cursos, senha, data_inscricao = usuario_logado
+            lista_cursos = cursos.split(",") if cursos else []
+            if curso.titulo not in lista_cursos:
+                lista_cursos.append(curso.titulo)
+                novos_cursos = ",".join(lista_cursos)
+                cursor.execute("UPDATE emails SET cursos=? WHERE cadastro=?", (novos_cursos, cadastro))
+                conexao.commit()
+                # Atualizar usuário logado com os cursos atualizados
+                cursor.execute("SELECT * FROM emails WHERE cadastro=?", (cadastro,))
+                usuario_logado = cursor.fetchone()
+                messagebox.showinfo("Sucesso", f"Curso '{curso.titulo}' marcado como lido.")
+            else:
+                messagebox.showinfo("Informação", "Curso já marcado como lido.")
+
+        btn_lido = tk.Button(conteudo_win, text="Marcar como Lido", command=marcar_como_lido)
+        btn_lido.pack(pady=10)
+
     for curso in cursos_disponiveis:
         btn_curso = tk.Button(frame_cursos, text=curso.titulo, font=("Arial", 12), width=30,
                               command=lambda c=curso: abrir_conteudo_curso(c))
         btn_curso.pack(pady=5)
 
-#INRFORMAÇÕES DO USUARIO
+#JANELA INRFORMAÇÕES DO USUARIO
 def infowin():
     global janela_info
     janela_info = tk.Toplevel(janela)
@@ -250,7 +267,7 @@ def abrir_planilha():
         if caminho:
             df.to_excel(caminho, index=False)
             messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho}", parent=root)
-
+######FUNC DO CRUD########
     def editar_registro():
         item = treeview.selection()
         if not item:
@@ -281,6 +298,13 @@ def abrir_planilha():
             novo_email = entry_email.get()
             novo_cursos = entry_cursos.get()
             cadastro_id = valores[2]
+
+            #TESTE PRA VER SE JA EXISTE USUARIO COM O EMAIL
+            cursor_local.execute("SELECT cadastro FROM emails WHERE email = ? AND cadastro != ?", (novo_email, cadastro_id))
+            if cursor_local.fetchone():
+                messagebox.showerror("Erro", "Email já cadastrado para outro usuário.", parent=editar_win)
+                return
+
             cursor_local.execute("UPDATE emails SET nome=?, email=?, cursos=? WHERE cadastro=?", (novo_nome, novo_email, novo_cursos, cadastro_id))
             conn.commit()
             treeview.item(item, values=(novo_nome, novo_email, cadastro_id, novo_cursos, valores[4]))
@@ -334,20 +358,20 @@ tk.Label(frame_inputs, text="Senha:").grid(row=1, column=0, padx=5, pady=5)
 entry_senha = tk.Entry(frame_inputs, show="*")
 entry_senha.grid(row=1, column=1, padx=5, pady=5)
 
-frame_botoes = tk.Frame(janela)
-frame_botoes.pack(pady=10)
+btn_entrar = tk.Button(janela, text="Entrar", command=logar)
+btn_entrar.pack(pady=5)
 
-btn_cadastrar = tk.Button(frame_botoes, text="Cadastrar", command=abrir_cadastro)
-btn_cadastrar.grid(row=0, column=0, padx=10)
+btn_cadastrar = tk.Button(janela, text="Cadastrar", command=abrir_cadastro)
+btn_cadastrar.pack(pady=5)
 
-btn_logar = tk.Button(frame_botoes, text="Login", command=logar)
-btn_logar.grid(row=0, column=1, padx=10)
+btn_resetar = tk.Button(janela, text="Resetar Banco", command=resetar_banco)
+btn_resetar.pack(pady=5)
 
-btn_arvore = tk.Button(frame_botoes, text="Ver usuários", command=abrir_planilha)
-btn_arvore.grid(row=0, column=2, padx=10)
+btn_planilha = tk.Button(janela, text="Ver Planilha", command=abrir_planilha)
+btn_planilha.pack(pady=5)
 
-btn_resetar = tk.Button(frame_botoes, text="Resetar Banco", command=resetar_banco)
-btn_resetar.grid(row=0, column=3, padx=10)
+usuario_logado = None
 
 criar_tabela()
 janela.mainloop()
+
