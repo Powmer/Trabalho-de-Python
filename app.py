@@ -202,8 +202,10 @@ def telaprincipalabrir():
                 cursor.execute("SELECT * FROM emails WHERE cadastro=?", (cadastro,))
                 usuario_logado = cursor.fetchone()
                 messagebox.showinfo("Sucesso", f"Curso '{curso.titulo}' marcado como lido.")
+                conteudo_win.destroy()
             else:
                 messagebox.showinfo("Informação", "Curso já marcado como lido.")
+                conteudo_win.destroy()
 
         btn_lido = tk.Button(conteudo_win, text="Marcar como Lido", command=marcar_como_lido)
         btn_lido.pack(pady=10)
