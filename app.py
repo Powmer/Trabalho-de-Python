@@ -3,10 +3,10 @@ import tkinter as tk
 from tkinter import messagebox, ttk, PhotoImage, filedialog
 import sqlite3
 import pandas as pd
-
+###ARQUIVOS DEFAULT###
 DB_NAME = "usuarios.db"
 PASTA_CURSOS = "cursostxt"
-
+#######################
 
 def criar_pasta_cursos():
     if not os.path.exists(PASTA_CURSOS):
@@ -31,7 +31,7 @@ def criar_pasta_cursos():
 
 criar_pasta_cursos()
 
-
+####CLASS CURSO####
 class Curso:
     def __init__(self, titulo, arquivo_conteudo):
         self.titulo = titulo
@@ -56,7 +56,7 @@ cursos_disponiveis = [
     Curso("Sorvetes", "sorvetes.txt")
 ]
 
-
+#CREATE TABLE CASO NAO EXISTA ( CASO HAJA PROBLEMA DE FORMATAÇÂO DELETAR BANCO)
 def criar_tabela():
     global conexao, cursor
     conexao = sqlite3.connect(DB_NAME)
@@ -73,7 +73,7 @@ def criar_tabela():
     """)
     conexao.commit()
 
-
+#O BOTAO 
 def resetar_banco():
     if messagebox.askyesno("Confirmar", "Tem certeza que deseja apagar todos os dados e resetar o banco?"):
         if os.path.exists(DB_NAME):
@@ -85,7 +85,7 @@ def resetar_banco():
         criar_tabela()
         messagebox.showinfo("Sucesso", "Banco de dados resetado com sucesso!")
 
-
+#FUNC CADASTRO LOGIN E ""REGEX""
 def abrir_cadastro():
     cadastro_win = tk.Toplevel(janela)
     cadastro_win.title("Cadastro de Aluno")
@@ -196,11 +196,12 @@ def telaprincipalabrir():
                               command=lambda c=curso: abrir_conteudo_curso(c))
         btn_curso.pack(pady=5)
 
+#INRFORMAÇÕES DO USUARIO
 def infowin():
     global janela_info
     janela_info = tk.Toplevel(janela)
     janela_info.title("Informações do Usuário")
-    janela_info.geometry("400x300")
+    janela_info.geometry("500x500")
 
     tk.Label(janela_info, text="Informações do Usuário", font=("Arial", 14, "bold")).pack(pady=10)
 
@@ -210,21 +211,17 @@ def infowin():
 
     cadastro, nome, email, cursos, senha, data_inscricao = usuario_logado
 
-    frame_info = tk.Frame(janela_info)
-    frame_info.pack(padx=20, pady=10, fill=tk.BOTH)
+    info_text = f"""
+    Nome: {nome}
+    Email: {email}
+    Cursos Inscritos: {cursos}
+    Data de Inscrição: {data_inscricao}
+    """
 
-    dados = {
-    "Nome:": nome,
-    "Email:": email,
-    "Cursos:": cursos,
-    "Data de Inscrição:": data_inscricao
-}
+    lbl_info = tk.Label(janela_info, text=info_text.strip(), justify="left", font=("Arial", 12), anchor="w")
+    lbl_info.pack(padx=20, pady=10, fill=tk.BOTH)
 
-    for i, (label, valor) in enumerate(dados.items()):
-        tk.Label(frame_info, text=label, font=("Arial", 12, "bold"), anchor="w", width=18).grid(row=i, column=0, sticky="w", pady=2)
-        tk.Label(frame_info, text=valor, font=("Arial", 12), anchor="w").grid(row=i, column=1, sticky="w", pady=2)
-
-
+#FUNC EXCEL
 def abrir_planilha():
     root = tk.Toplevel(janela)
     root.title("Planilha de Emails")
@@ -244,7 +241,6 @@ def abrir_planilha():
     treeview.pack(fill=tk.BOTH, expand=True)
 
     def exportar_excel():
-       
         dados = []
         for item in treeview.get_children():
             dados.append(treeview.item(item)["values"])
@@ -255,16 +251,71 @@ def abrir_planilha():
             df.to_excel(caminho, index=False)
             messagebox.showinfo("Sucesso", f"Planilha exportada para {caminho}", parent=root)
 
+    def editar_registro():
+        item = treeview.selection()
+        if not item:
+            messagebox.showwarning("Aviso", "Selecione um registro para editar.")
+            return
+        valores = treeview.item(item, "values")
+
+        editar_win = tk.Toplevel(root)
+        editar_win.title("Editar Registro")
+
+        tk.Label(editar_win, text="Nome:").grid(row=0, column=0, padx=5, pady=5)
+        entry_nome = tk.Entry(editar_win)
+        entry_nome.insert(0, valores[0])
+        entry_nome.grid(row=0, column=1, padx=5, pady=5)
+
+        tk.Label(editar_win, text="Email:").grid(row=1, column=0, padx=5, pady=5)
+        entry_email = tk.Entry(editar_win)
+        entry_email.insert(0, valores[1])
+        entry_email.grid(row=1, column=1, padx=5, pady=5)
+
+        tk.Label(editar_win, text="Cursos:").grid(row=2, column=0, padx=5, pady=5)
+        entry_cursos = tk.Entry(editar_win)
+        entry_cursos.insert(0, valores[3])
+        entry_cursos.grid(row=2, column=1, padx=5, pady=5)
+
+        def salvar_edicao():
+            novo_nome = entry_nome.get()
+            novo_email = entry_email.get()
+            novo_cursos = entry_cursos.get()
+            cadastro_id = valores[2]
+            cursor_local.execute("UPDATE emails SET nome=?, email=?, cursos=? WHERE cadastro=?", (novo_nome, novo_email, novo_cursos, cadastro_id))
+            conn.commit()
+            treeview.item(item, values=(novo_nome, novo_email, cadastro_id, novo_cursos, valores[4]))
+            editar_win.destroy()
+
+        btn_salvar = tk.Button(editar_win, text="Salvar", command=salvar_edicao)
+        btn_salvar.grid(row=3, column=1, pady=10)
+
+    def excluir_registro():
+        item = treeview.selection()
+        if not item:
+            messagebox.showwarning("Aviso", "Selecione um registro para excluir.")
+            return
+        valores = treeview.item(item, "values")
+        if messagebox.askyesno("Confirmar", f"Deseja excluir o registro {valores[1]}?"):
+            cadastro_id = valores[2]
+            cursor_local.execute("DELETE FROM emails WHERE cadastro=?", (cadastro_id,))
+            conn.commit()
+            treeview.delete(item)
+
     btn_exportar = tk.Button(root, text="Exportar para Excel", command=exportar_excel)
-    btn_exportar.pack(pady=10)
+    btn_exportar.pack(pady=5)
+
+    btn_editar = tk.Button(root, text="Editar", command=editar_registro)
+    btn_editar.pack(pady=5)
+
+    btn_excluir = tk.Button(root, text="Excluir", command=excluir_registro)
+    btn_excluir.pack(pady=5)
 
     conn.close()
 
-
-# INTERFACE PRINCIPAL
+#INTERFACE PRINCIPAL
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
-janela.geometry("600x450")
+janela.geometry("600x400")
 img = PhotoImage(file="Baking-Bread-Logo.png")
 label_titulo = tk.Label(janela, image=img)
 label_titulo.pack(pady=10)
