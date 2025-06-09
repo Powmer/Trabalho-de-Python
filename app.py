@@ -301,36 +301,38 @@ def abrir_planilha():
         entry_cursos.grid(row=2, column=1, padx=5, pady=5)
 
         def salvar_edicao():
-            novo_nome = entry_nome.get()
-            novo_email = entry_email.get()
-            novo_cursos = entry_cursos.get()
-            cadastro_id = valores[2]
+    novo_nome = entry_nome.get()
+    novo_email = entry_email.get()
+    novo_cursos = entry_cursos.get()
+    cadastro_id = valores[2]
 
-            #TESTE PRA VER SE JA EXISTE USUARIO COM O EMAIL
-            cursor_local.execute("SELECT cadastro FROM emails WHERE email = ? AND cadastro != ?", (novo_email, cadastro_id))
-            if cursor_local.fetchone():
-                messagebox.showerror("Erro", "Email já cadastrado para outro usuário.", parent=editar_win)
-                return
+    cursor_local.execute("SELECT cadastro FROM emails WHERE email = ? AND cadastro != ?", (novo_email, cadastro_id))
+    if cursor_local.fetchone():
+        messagebox.showerror("Erro", "Email já cadastrado para outro usuário.", parent=editar_win)
+        return
 
-            cursor_local.execute("UPDATE emails SET nome=?, email=?, cursos=? WHERE cadastro=?", (novo_nome, novo_email, novo_cursos, cadastro_id))
-            conn.commit()
-            treeview.item(item, values=(novo_nome, novo_email, cadastro_id, novo_cursos, valores[4]))
-            editar_win.destroy()
+    cursor_local.execute("UPDATE emails SET nome=?, email=?, cursos=? WHERE cadastro=?", (novo_nome, novo_email, novo_cursos, cadastro_id))
+    conn.commit()
 
-        btn_salvar = tk.Button(editar_win, text="Salvar", command=salvar_edicao)
-        btn_salvar.grid(row=3, column=1, pady=10)
+    treeview.item(item, values=(novo_nome, novo_email, cadastro_id, novo_cursos, valores[4]))
+    editar_win.destroy()
+
 
     def excluir_registro():
-        item = treeview.selection()
-        if not item:
-            messagebox.showwarning("Aviso", "Selecione um registro para excluir.")
-            return
-        valores = treeview.item(item, "values")
-        if messagebox.askyesno("Confirmar", f"Deseja excluir o registro {valores[1]}?"):
-            cadastro_id = valores[2]
-            cursor_local.execute("DELETE FROM emails WHERE cadastro=?", (cadastro_id,))
-            conn.commit()
-            treeview.delete(item)
+    item = treeview.selection()
+    if not item:
+        messagebox.showwarning("Aviso", "Selecione um registro para excluir.")
+        return
+    valores = treeview.item(item, "values")
+    
+    if messagebox.askyesno("Confirmar", f"Deseja excluir o registro {valores[1]}?"):
+        cadastro_id = valores[2]
+        
+        cursor_local.execute("DELETE FROM emails WHERE cadastro=?", (cadastro_id,))
+        conn.commit()
+        
+        treeview.delete(item)
+
 
     btn_exportar = tk.Button(root, text="Exportar para Excel", command=exportar_excel)
     btn_exportar.pack(pady=5)
