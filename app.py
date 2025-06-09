@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import messagebox, ttk, filedialog
+from tkinter import messagebox, ttk, filedialog, PhotoImage
 import openpyxl
 import sqlite3
 import pandas as pd
@@ -289,7 +289,6 @@ def abrir_planilha():
                 messagebox.showerror("Erro", "Email já cadastrado para outro usuário.", parent=editar_win)
                 return
 
-            # Atualizar no banco
             cursor_local.execute("UPDATE emails SET nome=?, email=?, cursos=? WHERE cadastro=?", (novo_nome, novo_email, novo_cursos, cadastro_id))
             conn.commit()
 
@@ -333,6 +332,9 @@ def abrir_planilha():
 janela = tk.Tk()
 janela.title("Cadastro e Login de Email")
 janela.geometry("600x400")
+img = PhotoImage(file="Baking-Bread-Logo.png")
+label_titulo = tk.Label(janela, image=img)
+label_titulo.pack(pady=10)
 
 tk.Label(janela, text="Login", font=("Arial", 14)).pack(pady=10)
 
