@@ -15,7 +15,7 @@ Este projeto é um sistema básico para cadastro, login e visualização de curs
 3. Na janela principal, faça login ou clique em "Cadastrar" para criar um novo usuário.
 4. Após o login, veja a lista de cursos e abra o conteúdo de cada um.
 5. Escolha um dos Modulos disponiveis
-6. é possivel visualizar suas informações e os cursos concluidos com o botao no final da pagina principal
+6. é possivel visualizar suas informações e os cursos concluidos com o botao no final da pagina principal.
 
 @Requisitos
 - Python 3(ou superior)
