@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import messagebox, ttk, PhotoImage, filedialog
+import openpyxl
 import sqlite3
 import pandas as pd
 
@@ -236,7 +237,7 @@ def infowin():
     dados = {
     "Nome:": nome,
     "Email:": email,
-    "Cursos:": cursos,
+    "Cursos Concluidos:": cursos,
     "Data de Inscrição:": data_inscricao
 }
 
@@ -369,9 +370,6 @@ btn_entrar.pack(pady=5)
 
 btn_cadastrar = tk.Button(janela, text="Cadastrar", command=abrir_cadastro)
 btn_cadastrar.pack(pady=5)
-
-btn_resetar = tk.Button(janela, text="Resetar Banco", command=resetar_banco)
-btn_resetar.pack(pady=5)
 
 btn_planilha = tk.Button(janela, text="Ver Planilha", command=abrir_planilha)
 btn_planilha.pack(pady=5)
